@@ -10,7 +10,7 @@ typedef struct _message {
   int tIntensity;
 } _message;
 
-_message outData = {1, 10};  // Example values
+_message outData = {1, 0}; 
 
 void setup() {
   Serial.begin(115200);
@@ -32,16 +32,23 @@ void setup() {
     return;
   }
 
-  Serial.println("Sender Ready");
+  Serial.println("Sender Ready - Enter intensity values (e.g., 5, 10...)");
 }
 
 void loop() {
-  esp_err_t result = esp_now_send(receiverMac, (uint8_t *)&outData, sizeof(outData));
-  if (result == ESP_OK) {
-    Serial.println("Struct sent successfully");
-  } else {
-    Serial.printf("Send error: %d\n", result);
-  }
+  
+  if (Serial.available()) {
+    int input = Serial.parseInt();
+    if (input >= 0) {
+      outData.tIntensity = input;
 
-  delay(1000);  // Send every second
+   
+      esp_err_t result = esp_now_send(receiverMac, (uint8_t *)&outData, sizeof(outData));
+      if (result == ESP_OK) {
+        Serial.printf("Sent mode: %d, intensity: %d\n", outData.tMode, outData.tIntensity);
+      } else {
+        Serial.printf("Send error: %d\n", result);
+      }
+    }
+  }
 }
